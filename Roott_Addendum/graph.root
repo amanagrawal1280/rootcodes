@@ -1,0 +1,28 @@
+/*
+   Once the Mean Cluster Width(MCW) was extracted from each file, it was noted in the file 
+   Angles.ods and then the columns for angle and MCW were copid into angle.txt from which this 
+   program takes its readings. 
+   This is fit with a generalized quadratic function
+
+*/
+
+{
+TGraphErrors graph("plotdata.dat","%lg %lg"); //A graph declared with the file
+graph.SetTitle(                             //parameters set
+"mean stub bend vs angle;"
+"Angle(degrees);"
+"mean stub bend");
+graph.SetMarkerStyle(20);
+graph.SetMarkerSize(0.6);     
+
+TF1 f2("f2","[0]*x+[1]");         //A generalized quadratic function
+auto fitResPtr = graph.Fit(&f2, "S");     //Fit is performed and parameters displayed
+graph.Draw("AP");                         //drawn on the same canvas
+//f2.DrawClone("Same");
+
+TLegend leg(.1,.7,.3,.9,"Legend"); //legend is made with required parameters
+leg.SetFillColor(0);
+leg.AddEntry(&graph,"Observed values");
+leg.AddEntry(&f2,"linear fit");
+leg.DrawClone("Same");
+}

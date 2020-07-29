@@ -1,0 +1,125 @@
+
+{
+   gROOT->ProcessLine("#include <vector>");//To use vectors
+   gROOT->ProcessLine("#include<fstream>");
+   vector<int>* hits0;						//declaring variables. i is the iterator for the loop 
+   vector<int>* hits1;	
+   long double ccount0, ccount1, sum0, sum1;
+   long double mean0, mean1; int flag = -1, flag2 = -1;long double  bend = 0, scount=0;
+   TGraphErrors *g = new TGraphErrors();
+         ofstream ofile("thisangle.dat");					//same name is used as original to keep track
+   double tkXpos, tkYpos, mid=0, mid1 = 0; long int i=0,j=0,k=0; //mid gives the position of the cluster
+   long int n0 = 0;
+   char* filename[27] = {
+   "./angularScan/BTanalysis_792.root",
+   "./angularScan/BTanalysis_797.root",
+   "./angularScan/BTanalysis_800.root",
+   "./angularScan/BTanalysis_802.root",
+   "./angularScan/BTanalysis_803.root",
+   "./angularScan/BTanalysis_804.root",
+   "./angularScan/BTanalysis_806.root",
+   "./angularScan/BTanalysis_810.root",
+   "./angularScan/BTanalysis_811.root",
+   "./angularScan/BTanalysis_812.root",
+   "./angularScan/BTanalysis_813.root",
+   "./angularScan/BTanalysis_814.root",
+   "./angularScan/BTanalysis_815.root",
+   "./angularScan/BTanalysis_816.root",
+   "./angularScan/BTanalysis_817.root",
+   "./angularScan/BTanalysis_819.root",
+   "./angularScan/BTanalysis_820.root",
+   "./angularScan/BTanalysis_821.root",
+   "./angularScan/BTanalysis_823.root",
+   "./angularScan/BTanalysis_824.root",
+   "./angularScan/BTanalysis_825.root",
+   "./angularScan/BTanalysis_826.root",
+   "./angularScan/BTanalysis_827.root",
+   "./angularScan/BTanalysis_828.root",
+   "./angularScan/BTanalysis_829.root",
+   "./angularScan/BTanalysis_830.root",
+   "./angularScan/BTanalysis_831.root",};
+   for (int ip = 0; ip < 27; ip++)
+   {
+   	ccount0 = ccount1  = sum0 = sum1= 0; mean0 = mean1 = 0;
+   TFile f(filename[ip]); //to use the file
+   TTree* btTree; f.GetObject("btTree",btTree);   //getting a copy of the tree
+   btTree->SetBranchAddress("hits0",&hits0);    //linking the tree's variables to our variables
+   btTree->SetBranchAddress("hits1",&hits1);
+   btTree->SetBranchAddress("tkXpos",&tkXpos);
+   btTree->SetBranchAddress("tkYpos",&tkYpos);
+   long long n = btTree->GetEntries();    n0+=n;   //now n is the number of entries in the tree, here about 16000
+
+     for (i = 0; i < n; i++) // iterating over all entries
+   { 
+      btTree->GetEntry(i); mid= mid1 = 0;
+      int vec0size = hits0->size();
+      int vec1size = hits1->size();
+      if (vec0size>0)
+      { 
+        for ( j= 0; j<vec0size-1; j++) //loop over a vector
+      {flag=-1; flag2=-1;
+         if ((*hits0)[j] != ((*hits0)[j+1]-1))  //i.e. end of this cluster 
+         	{ 
+
+
+
+         		if((j-mid)<2){
+
+         	if(vec1size>0){flag=-1; flag2=-1;
+      for ( k= 0; k<vec1size-1; k++) 
+      {flag=-1; flag2=-1;
+         if ((*hits1)[k] != ((*hits1)[k+1]-1)) 
+         	{ 
+         			if ((k-mid1)<2 && (abs(-(*hits1)[mid1]+(*hits0)[mid]))<5)flag = mid;flag2=-(*hits1)[mid1]+(*hits0)[mid];mid1=k+1;}
+         		
+         else {mid1+=0.5;}
+
+
+      }
+      { if ((k-mid1)<2 && (abs(-(*hits1)[mid1]+(*hits0)[mid]))<5)flag = mid;flag2=-(*hits1)[mid1]+(*hits0)[mid];mid1=k+1;}
+         	}
+      } if (flag!= -1){
+         	g-> SetPoint(g->GetN(),flag,tkXpos); scount++; bend+= (flag2); flag=-1; flag2=-1;
+         }
+
+
+  }
+
+
+         	
+         else {mid+=0.5;} //if the next element is in the cluster
+         }
+
+      }
+        
+
+
+
+     if((j-mid)<2){
+
+         	if(vec1size>0){flag=-1; flag2=-1;
+      for ( k= 0; k<vec1size-1; k++) 
+      {
+         if ((*hits1)[k] != ((*hits1)[k+1]-1)) 
+         	{ 
+         			if ((k-mid1)<2 && (abs(-(*hits1)[mid1]+(*hits0)[mid]))<5){flag = mid;flag2=-(*hits1)[mid1]+(*hits0)[mid];mid1=k+1;}
+         		}
+         else {mid1+=0.5;}
+
+      }
+      { if ((k-mid1)<2 && (abs(-(*hits1)[mid1]+(*hits0)[mid]))<5){flag = mid;flag2=-(*hits1)[mid1]+(*hits0)[mid];mid1=k+1;}
+         	}
+      }
+       if (flag!= -1){
+         	g-> SetPoint(g->GetN(),tkXpos,flag);scount++; bend+= (flag2); flag=-1; flag2=-1;
+         }
+      
+   }
+flag=-1; flag2=-1;}
+
+ofile << scount <<"\t" <<(bend/scount) << "\n"; scount = bend = 0;
+
+   
+}
+ofile.close();  g->Draw("AP");cout << g->GetN() <<"  "<<n0<<"\n";
+}
