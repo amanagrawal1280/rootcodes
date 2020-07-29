@@ -1,0 +1,78 @@
+/*
+   The following logic is used: 
+   First we declare the variables as in the tree, and then set the branch address of the 
+   tree as those variables. Then we declare the two histograms h0 and h1that have the required 
+   residuals for sensor0 and sensor1 respectively. Then position of the cluster is calculated in 
+   following way:
+   1) A variable mid is declared and set to the index of start of the cluster
+   2) If the next element is in the cluster, mid is increased by 0.5
+   3) when the next element is not in the cluster, mid is added to the respective histogram
+		if mid is half-integer, the position of the cluster is given by a half integer, corresponding
+		to 0.5 more than value of entry with index (mid-0.5)
+	the histogram are drawn and plotted
+*/
+{
+   gROOT->ProcessLine("#include <vector>");//To use vectors
+   vector<int>* hits0;						//declaring variables. i is the iterator for the loop 
+   vector<int>* hits1;						//same name is used as original to keep track
+   double tkXpos, tkYpos, mid=0; long int i=0; //mid gives the position of the cluster
+   TFile f("./angularScan/BTanalysis_831.root"); //to use the file
+   TTree* btTree; f.GetObject("btTree",btTree);   //getting a copy of the tree
+   btTree->SetBranchAddress("hits0",&hits0);    //linking the tree's variables to our variables
+   btTree->SetBranchAddress("hits1",&hits1);
+   btTree->SetBranchAddress("tkXpos",&tkXpos);
+   btTree->SetBranchAddress("tkYpos",&tkYpos);
+   long long n = btTree->GetEntries();       //now n is the number of entries in the tree, here about 16000
+   TH1D *h0= new TH1D("h0","S0 residual",500,-0.1,0.4);  //histograms declared. 200 bins because about 36000 dtat entries
+   TH1D *h1= new TH1D("h1","S1 residual",500,-0.1,0.4);
+     for (i = 0; i < n; i++) // iterating over all entries
+   {
+      btTree->GetEntry(i); 
+      int vec0size = hits0->size();
+      int vec1size = hits1->size();
+      if (vec0size>0)
+      { 
+        for (int j= 0; j<vec0size-1; j++) //loop over a vector
+      {
+         if ((*hits0)[j] != ((*hits0)[j+1]-1))  //i.e. end of this cluster 
+         	{ if(((int)(2*mid))%2 == 1){h0->Fill((((*hits0)[mid]-127+0.5)*0.09-tkXpos));mid=j+1;}  //m is half-int. m=j+1 sets m to start of next cluster
+         		else{ h0->Fill((((*hits0)[mid]-127)*0.09-tkXpos));mid=j+1;}	//m is int
+         	}
+         else {mid+=0.5;} //if the next element is in the cluster
+
+      }{ if(((int)(2*mid))%2 == 1){h0->Fill((((*hits0)[mid]-127+0.5)*0.09-tkXpos));mid=0;} 
+         		else{ h0->Fill((((*hits0)[mid]-127)*0.09-tkXpos));mid=0;}
+         	}} 
+      if(vec1size>0){
+      for (int j= 0; j<vec1size-1; j++) //same for the other histogram
+      {
+         if ((*hits1)[j] != ((*hits1)[j+1]-1)) 
+         	{ if(((int)(2*mid))%2 == 1){h1->Fill((((*hits1)[mid]-127+0.5)*0.09-tkXpos));mid=j+1;} 
+         		else{ h1->Fill((((*hits1)[mid]-127)*0.09-tkXpos));mid=j+1;}
+         	}
+         else {mid+=0.5;}
+
+      }
+      { if( ((int)(2*mid))%2 == 1){h1->Fill((((*hits1)[mid]-127+0.5)*0.09-tkXpos));mid=0;} 
+         		else{ h1->Fill((((*hits1)[mid]-127)*0.09-tkXpos));mid=0;}
+         	}
+      }
+      
+   }
+
+  h0->SetTitle(
+"Residual;");
+
+h1->SetTitle(
+"Residual;");
+h1->SetLineColor(kRed); //to seperate the 2 histogram
+
+ h0->Draw("hist"); //drawn
+h1->Draw("SameS"); // drawn with statistic box at the same place, which is later dragged into right place 
+
+TLegend leg(.1,.7,.25,.9,"Legend"); //legend made
+leg.SetFillColor(0);
+leg.AddEntry(h0,"Sensor 0");
+leg.AddEntry(h1,"Sensor 1");
+leg.DrawClone("Same");
+}

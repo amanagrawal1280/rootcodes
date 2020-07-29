@@ -1,0 +1,13 @@
+{
+   // example of macro to read data from an ascii file and
+   // create a root file with an histogram and a TTree
+
+   // the structure to hold the variables for the branch
+
+   
+   double s0, s1, tx0, tx1;
+   // continued...
+   // open the ASCII file
+   TFile f("./angularScan/BTanalysis_760.root");
+   TTree* t; f.GetObject("t",t);
+}

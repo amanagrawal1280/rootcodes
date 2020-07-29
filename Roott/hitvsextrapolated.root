@@ -1,0 +1,71 @@
+/*
+   The following logic is used: 
+   First we declare the variables as in the tree, and then set the branch address of the 
+   tree as those variables. We then make a multigraph mg which has 2 graphs g0 and g1.
+   Now we loop over the entries and for all pairs of  (HitPosition,ExpectedPosition), we 
+   add an entry in g0(g1) from hits0(hits1). We then plot the multigraph.
+*/
+{
+   gROOT->ProcessLine("#include <vector>");  //To use vectors
+   vector<int>* hits0;                    //declaring variables. i is the iterator for the loop                    
+   vector<int>* hits1;                    //same name is used as original to keep track
+   double tkXpos, tkYpos; long int i=0;
+   TFile f("./angularScan/BTanalysis_831.root"); //to use the file
+   TTree* btTree; f.GetObject("btTree",btTree);   //getting a copy of the tree
+   btTree->SetBranchAddress("hits0",&hits0);      //linking the tree's variables to our variables
+   btTree->SetBranchAddress("hits1",&hits1);
+   btTree->SetBranchAddress("tkXpos",&tkXpos);
+   btTree->SetBranchAddress("tkYpos",&tkYpos);
+   long long n = btTree->GetEntries();   //now n is the number of entries in the tree, here about 16000
+   TMultiGraph *mg = new TMultiGraph();  //declaring the multigraph and graphs
+   TGraph *g0= new TGraph();
+   TGraph *g1= new TGraph();
+   for (i = 0; i < n; i++)   //loop over all entries
+   {
+      btTree->GetEntry(i);
+      int vec0size = hits0->size();
+      int vec1size = hits1->size();
+      if (vec0size>0)
+      { 
+        for (int j= 0; j<vec0size; j++) //loop over all elements of the vector
+      {
+         g0->SetPoint(g0->GetN(),(((*hits0)[j]-127)*0.09),tkXpos);  //entry added
+
+
+      }}
+      if(vec1size>0){   //same with hits1
+      for (int j= 0; j<vec1size; j++)
+      {
+         g1->SetPoint(g1->GetN(),(((*hits1)[j]-127)*0.09),tkXpos);
+      }
+      
+      }
+      
+   }
+
+  g0->SetTitle(                        //Style of graphs are selected
+"Hit position vs expected position;"
+"Expected position(Global Coordinates);"
+"Hit position(Global Coordinates)");
+  g0->SetMarkerColor(kRed);
+g0->SetMarkerStyle(20);
+g0->SetMarkerSize(0.6);
+mg->Add(g0);   //graph g0 added
+g1->SetTitle(
+"Hit position vs expected position;"
+"Expected position(Global Coordinates);"
+"Hit position(Global Coordinates)");
+g1->SetMarkerColor(kBlue);
+g1->SetMarkerStyle(20);
+g1->SetMarkerSize(0.6);
+mg->Add(g1);
+mg->SetTitle("Hit position vs expected position;"
+"Expected position(Global Coordinates);"
+"Hit position(Global Coordinates)");
+mg->Draw("AP");
+TLegend leg(.1,.7,.3,.9,"Legend"); //legend made
+leg.SetFillColor(0);
+leg.AddEntry(g0,"Sensor 0");
+leg.AddEntry(g1,"Sensor 1");
+leg.DrawClone("Same");
+}

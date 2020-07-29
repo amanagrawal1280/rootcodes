@@ -1,0 +1,40 @@
+Tree information:
+There are 2 sets of trees in the folders thresholdScan and angularScan. Each root file in these folders are named - BTanalysis_<RUN_NUMBER>.root. There is a png file which will tell you the threshol/angle for a RUN_NUMBER. Description of the tree content instide the files are given below. 
+
+Inside each file, there is a TTree named - "btTree".
+Description of tree branches - 
+
+hit0 - vector of hits in DUT Sensor 0. Each element of the vector represents a strip of sensor 0 which has recorded a hit.
+hit1 - vector of hits in DUT Sensor 1. Each element of the vector represents a strip of sensor 1 which has recorded a hit.
+tkXpos - the hit position of the track extrapolated on DUT sensor 0
+tkYpos - the hit position of the track extrapolated on DUT sensor 1
+
+Forming a cluster of a sensor:
+Cluster is essentially consecutive hits joined together. For e.g., say vector of hits on a sensor has the following entries = 
+5, 23, 24, , 8. 
+
+Then the clusters of the sensor would be - 5, (23, 24) and 8. The hits of 23+24 will now be joined to form a cluster of width 2 strips, wheras hits at pos 5, 8 will be of width 1 strip. A cluster has the following properties - 
+
+1. Width = number of strips forming the cluster. In the example above there are two 1 strip cluster and one 2-strip cluster.
+2. Position = central positon of all the strips in the cluster. For single strip cluster same as the hit position. In the example, the 
+              postion of the 2 strip cluster is 23.5 {(23+24)/2}. Can you generalise the formula?
+
+Task 1: Plot the hit position of the sensors and extrapolated track positions.
+
+Task 2: Implement the logic to form clusters out of the hits of the two sensors and make a plot of the mean cluster size as a function of angle.
+
+Task3. Plot the differene of position of the cluster with respect to the X position of the track, also called residual. The positon of the the track is in a global coordinate system. To convert the position of hits/cluster to the same coordinate system, a transformation has to be applied: 
+
+double hpositionGlobal = (hitpositionInstrips - 127)*0.09;
+
+The sensors have only 2 CBC connected with total number of strips as 254. So 254/2 = 127 represents the center of the DUT. 
+0.09 represents the pitch of the sensors. The quantity to plot will be:-
+ (hpositionGlobal - tkXpos)
+
+
+
+
+
+
+
+

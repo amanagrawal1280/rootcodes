@@ -1,0 +1,50 @@
+/*
+   The following logic is used: 
+   First we declare the variables as in the tree, and then set the branch address of the 
+   tree as those variables. We then iterate over all the entries mentaining the two variables:
+   sum: this gives the total number of hits
+   ccount: this gives the total number of clusters
+   mean = sum/ccount is therefore the Mean Cluster Width (MCW)
+   ccount is calculated in the following way: 
+      1) each nonempty vector has atleast 1 cluster
+      2) if there are c instances where the vector has values that are not 1 more than the previous 
+         values, then there are c such 'seperations' between clusters and hence c+1 clusters
+*/
+{
+   gROOT->ProcessLine("#include <vector>");  //to use vectors
+   vector<int>* hits0;    //declaring variables.i is the iterator for the loop 
+   vector<int>* hits1;    //same name is used as original to keep track
+   double tkXpos, tkYpos; long int sum=0, i=0; //sum-> number of hits
+   long double mean = 0, ccount = 0;    //mean->MCW ccount->number of clusters
+   TFile f("./angularScan/BTanalysis_831.root"); //to use the file
+   TTree* btTree; f.GetObject("btTree",btTree);  //getting a copy of the tree
+   btTree->SetBranchAddress("hits0",&hits0);     //linking the tree's variables to our variables
+   btTree->SetBranchAddress("hits1",&hits1);
+   btTree->SetBranchAddress("tkXpos",&tkXpos);
+   btTree->SetBranchAddress("tkYpos",&tkYpos);
+   long long n = btTree->GetEntries();   //n is the number of entries in the tree
+   for (i = 0; i < n; i++) //iterating over all entries
+   {
+      btTree->GetEntry(i); //set the variables
+      int vec0size = hits0->size(); 
+      int vec1size = hits1->size();
+      if (vec0size>0) //nonempty hits0
+      { ccount++; //atleast 1 cluster
+        for (int j= 0; j<vec0size-1; j++)  //iterating till second last element becaule looking
+      {                                    //for jth-j+1th pairs
+         if ((*hits0)[j] != ((*hits0)[j+1]-1)) ccount++;  // if not consecutive, there there is another cluster
+
+      }}
+      if(vec1size>0){ ccount++;  //same with hits1
+      for (int j= 0; j<vec1size-1; j++)
+      {
+         if ((*hits1)[j] != ((*hits1)[j+1]-1)) ccount++;
+
+      }
+      sum+= vec0size; sum+= vec1size; //total number of entries is the sum of number entries
+      }
+      
+   }
+   mean = sum / ccount; 
+    cout << mean<<"\n";
+}
